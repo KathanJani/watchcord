@@ -1,0 +1,7 @@
+discord.py==2.4.0
+fastapi[all]==0.115.0
+pandas==2.2.3
+pydantic==2.9.2
+scrapeops_scrapy==0.5.6
+Scrapy==2.11.2
+selenium==4.25.0
