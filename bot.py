@@ -3,7 +3,7 @@ from discord import app_commands
 from discord.ext import commands
 import pandas as pd
 import os
-from ..scrapers.scrapers.spiders.amazon import run_spider
+from scrapers.scrapers.spiders.amazon import run_spider
 DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
 bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
 
@@ -49,12 +49,14 @@ async def scrapedproductdemo(interaction: discord.Interaction):
 @bot.tree.command(name="amazonscrapingdemo")
 @app_commands.describe(url_to_scrape = "URL To Scrape:")
 async def amazonscrapingdemo(interaction: discord.Interaction, url_to_scrape: str):
-    spider_data = run_spider([url_to_scrape])
+    await interaction.response.defer()
+    spider_data = await run_spider([url_to_scrape])
     embed = discord.Embed(title=spider_data['title'], color=discord.Color.blue())
     embed.set_author(name="Scraped Product")
     embed.add_field(name="Price", value=spider_data['price'], inline=False)
     embed.add_field(name="ASIN", value=spider_data['asin'], inline=False)
     embed.set_image(url=spider_data["image"])
-    await interaction.response.send_message(embed=embed)
+    # await interaction.response.send_message(embed=embed)
+    await interaction.followup.send(embed=embed)
 
 bot.run(DISCORD_TOKEN) # type: ignore
