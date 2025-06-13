@@ -28,13 +28,21 @@ To run this project, you will need to add the following environment variables to
 
 `PUBLIC_KEY`
 
+`MONGODB_URI`
+
+`BROKER_URL`
+
+`BACKEND_URL`
+
+`SCRAPEOPS_API_KEY`
+
 
 ## Run Locally
 
 Clone the project
 
 ```bash
-git clone https://github.com/KathanJani/watchcord.git
+git clone https://github.com/HarshAwasthi1204/watchcord.git
 ```
 
 Go to the project directory

@@ -12,6 +12,10 @@ BOT_NAME = "scrapers"
 SPIDER_MODULES = ["scrapers.spiders"]
 NEWSPIDER_MODULE = "scrapers.spiders"
 
+# ScrapeOps settings
+import os
+SCRAPEOPS_API_KEY = os.getenv("SCRAPEOPS_API_KEY")
+SCRAPEOPS_PROXY_ENABLED = True
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = "scrapers (+http://www.yourdomain.com)"
@@ -21,6 +25,9 @@ ROBOTSTXT_OBEY = True
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 #CONCURRENT_REQUESTS = 32
+
+# ScrapeOps Concurrent Requests Limit
+CONCURRENT_REQUESTS = 1
 
 # Configure a delay for requests for the same website (default: 0)
 # See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay
@@ -53,6 +60,11 @@ ROBOTSTXT_OBEY = True
 #DOWNLOADER_MIDDLEWARES = {
 #    "scrapers.middlewares.ScrapersDownloaderMiddleware": 543,
 #}
+
+# ScrapeOps Downloader Middleware
+DOWNLOADER_MIDDLEWARES = {
+    'scrapeops_scrapy_proxy_sdk.scrapeops_scrapy_proxy_sdk.ScrapeOpsScrapyProxySdk': 725,
+}
 
 # Enable or disable extensions
 # See https://docs.scrapy.org/en/latest/topics/extensions.html

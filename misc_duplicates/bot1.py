@@ -1,11 +1,10 @@
+###MEANT TO BE PLACED IN THE PARENT DIRECTORY. TO BE USED FOR TESTING PURPOSES ONLY.###
 import discord
 from discord import app_commands
 from discord.ext import commands
 import pandas as pd
 import os
-# from ..scrapers.scrapers.spiders.amazon import run_spider
-# from scrapers.scrapers.spiders.amazon import run_spider
-from api.models.models import User, TrackedProduct, ScheduledTask
+from scrapers.scrapers.spiders.amazon import run_spider
 # import requests
 import aiohttp
 import logging
@@ -16,7 +15,7 @@ discord.utils.setup_logging(level=logging.DEBUG, root=False)
 # if not DISCORD_TOKEN:
 #     load_dotenv()
 #     DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
-# DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
+DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
 bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
 
 @bot.event
@@ -67,12 +66,6 @@ async def get_spider_data(urls_to_scrape):
             response_data = await response.json()
     return response_data
 
-async def get_flipkart_spider_data(urls_to_scrape):
-    async with aiohttp.ClientSession() as session:
-        async with session.get('http://localhost:8000/scrapeflipkart/', params={"urls":urls_to_scrape}) as response:
-            response_data = await response.json()
-    return response_data
-
 async def get_test_celery(name):
     async with aiohttp.ClientSession() as session:
         async with session.get('http://localhost:8000/testcelery/', params={"name":name}) as response:
@@ -85,45 +78,17 @@ async def get_celery_spider_data(urls_to_scrape):
             response_data = await response.json()
     return response_data
 
-async def get_celery_flipkart_spider_data(urls_to_scrape):
+async def get_test_celery_schedule(test_url, test_schedule, user):
     async with aiohttp.ClientSession() as session:
-        async with session.get('http://localhost:8000/scrapeflipkartcelery/', params={"urls":urls_to_scrape}) as response:
+        async with session.get('http://localhost:8000/scheduletaskdemo/', params={"urls":test_url,"test_schedule":test_schedule, "user":user}) as response:
             response_data = await response.json()
     return response_data
-
-async def get_test_celery_schedule(test_url, test_schedule, userid, username):
-    async with aiohttp.ClientSession() as session:
-        async with session.post('http://localhost:8000/createuser/', json=User(discord_id=userid, username=username).model_dump()) as response:
-            createuser_response_data = await response.json()
-        async with session.get('http://localhost:8000/scheduletaskdemo/', params={"urls":test_url,"test_schedule":test_schedule, "user":userid}) as response:
-            response_data = await response.json()
-    return response_data, createuser_response_data
 
 async def get_test_celery_schedule_delete(test_key):
     async with aiohttp.ClientSession() as session:
         async with session.get('http://localhost:8000/deletescheduledtaskdemo/', params={"key":test_key}) as response:
             response_data = await response.json()
     return response_data
-
-async def get_test_flipkart_celery_schedule(test_url, test_schedule, userid, username):
-    async with aiohttp.ClientSession() as session:
-        async with session.post('http://localhost:8000/createuser/', json=User(discord_id=userid, username=username).model_dump()) as response:
-            createuser_response_data = await response.json()
-        async with session.get('http://localhost:8000/scheduleflipkarttaskdemo/', params={"urls":test_url,"test_schedule":test_schedule, "user":userid}) as response:
-            response_data = await response.json()
-    return response_data, createuser_response_data
-
-async def get_test_flipkart_celery_schedule_delete(test_key):
-    async with aiohttp.ClientSession() as session:
-        async with session.get('http://localhost:8000/deleteflipkartscheduledtaskdemo/', params={"key":test_key}) as response:
-            response_data = await response.json()
-    return response_data
-
-# async def get_recommendation_data(query):
-#     async with aiohttp.ClientSession() as session:
-#         async with session.get('https://testcord.onrender.com/search/', params={"query":query}) as response:
-#             response_data = await response.json()
-#     return response_data
 
 # @bot.tree.command(name="amazonscrapingdemo")
 # @app_commands.describe(urls_to_scrape = "URL To Scrape:")
@@ -163,29 +128,6 @@ async def amazonscrapingdemo(interaction: discord.Interaction, urls_to_scrape: s
     # await interaction.response.send_message(embed=embed)
     # await interaction.followup.send(f"{spider_data}")
 
-@bot.tree.command(name="flipkartscrapingdemo")
-@app_commands.describe(urls_to_scrape = "URL To Scrape:")
-async def flipkartscrapingdemo(interaction: discord.Interaction, urls_to_scrape: str):
-    await interaction.response.defer()
-    spider_data = await get_flipkart_spider_data(urls_to_scrape=urls_to_scrape)
-    for i in range(len(spider_data['fsns'])):
-        embed = discord.Embed(title=spider_data['titles'][i], color=discord.Color.blue())
-        embed.set_author(name=f"{interaction.user.display_name}'s Scraped Product")
-        embed.add_field(name="Domain", value=spider_data['domains'][i], inline=True)
-        embed.add_field(name="Product ID", value=spider_data['fsns'][i], inline=True)
-        embed.add_field(name="Rating", value=spider_data['ratings'][i], inline=True)
-        embed.add_field(name="MRP", value=spider_data['mrps'][i], inline=True)
-        embed.add_field(name="Discount", value=spider_data['discount_percentages'][i], inline=True)
-        embed.add_field(name="Current Price", value=spider_data['current_prices'][i], inline=True)
-        # embed.add_field(name="Categories", value=spider_data['categories'][i], inline=False)
-        embed.add_field(name="Categories", value=", ".join(category for category in spider_data['categories'][i]), inline=False)
-        # embed.add_field(name="Description", value=spider_data['descriptions'][i][0:2], inline=False)
-        embed.add_field(name="Description", value="\n".join(description for description in spider_data['descriptions'][i][0:4]), inline=False)
-        embed.set_image(url=spider_data["images"][i])
-        await interaction.followup.send(f"Hey {interaction.user.mention}! Here's your data!",embed=embed)
-    # await interaction.response.send_message(embed=embed)
-    # await interaction.followup.send(f"{spider_data}")
-
 @bot.tree.command(name="test_celery")
 @app_commands.describe(test_name = "Name To Test Celery:")
 async def test_celery(interaction: discord.Interaction, test_name: str):
@@ -212,30 +154,11 @@ async def scrape_amazon_celery_demo(interaction: discord.Interaction, urls_to_sc
         embed.set_image(url=celery_spider_data["task_result"]["images"][i])
         await interaction.followup.send(f"Hey {interaction.user.mention}! Here's your data by Celery!",embed=embed)
 
-# from celery.result import AsyncResult
-@bot.tree.command(name="scrape_flipkart_celery_demo")
-@app_commands.describe(urls_to_scrape = "URL To Scrape:")
-async def scrape_flipkart_celery_demo(interaction: discord.Interaction, urls_to_scrape: str):
-    await interaction.response.defer()
-    celery_spider_data = await get_celery_flipkart_spider_data(urls_to_scrape=urls_to_scrape)
-    # await interaction.followup.send(f"Hey {interaction.user.mention}! Celery is processing your task: {celery_spider_data}")
-    # while AsyncResult(celery_spider_data["task_id"]).status == 'PENDING':
-    #     continue
-    # await interaction.followup.edit_message(message_id=interaction.id,content=f"Hey{interaction.user.mention}! Celery has processed your data: {AsyncResult(celery_spider_data["task_id"]).result}")
-    # await interaction.followup.send(f"Hey {interaction.user.mention}! Celery gave: {celery_spider_data}")
-    for i in range(len(celery_spider_data["task_result"]['fsns'])):
-        embed = discord.Embed(title=celery_spider_data["task_result"]['titles'][i], color=discord.Color.blue())
-        embed.set_author(name="Scraped Product")
-        embed.add_field(name="Price", value=celery_spider_data["task_result"]['prices'][i], inline=False)
-        embed.add_field(name="FSN", value=celery_spider_data["task_result"]['fsns'][i], inline=False)
-        embed.set_image(url=celery_spider_data["task_result"]["images"][i])
-        await interaction.followup.send(f"Hey {interaction.user.mention}! Here's your data by Celery!",embed=embed)
-
 @bot.tree.command(name="test_celery_scheduling")
 @app_commands.describe(test_url = "URL To Track:", test_schedule = "Schedule For Task(in seconds):")
 async def test_celery_scheduling(interaction: discord.Interaction, test_url: str, test_schedule: int):
     await interaction.response.defer()
-    celery_scheduled_data = await get_test_celery_schedule(test_url=test_url, test_schedule=test_schedule, userid=str(interaction.user.id), username=interaction.user.name)
+    celery_scheduled_data = await get_test_celery_schedule(test_url=test_url, test_schedule=test_schedule, user=interaction.user.id)
     await interaction.followup.send(f"{interaction.user.mention} celery says: `{celery_scheduled_data}`")
 
 @bot.tree.command(name="test_celery_schedule_delete")
@@ -245,27 +168,4 @@ async def test_celery_schedule_delete(interaction: discord.Interaction, test_key
     celery_deleted_schedule_data = await get_test_celery_schedule_delete(test_key=test_key)
     await interaction.followup.send(f"{interaction.user.mention} celery says: `{celery_deleted_schedule_data}`")
 
-@bot.tree.command(name="test_flipkart_celery_scheduling")
-@app_commands.describe(test_url = "URL To Track:", test_schedule = "Schedule For Task(in seconds):")
-async def test_flipkart_celery_scheduling(interaction: discord.Interaction, test_url: str, test_schedule: int):
-    await interaction.response.defer()
-    celery_scheduled_data = await get_test_flipkart_celery_schedule(test_url=test_url, test_schedule=test_schedule, userid=str(interaction.user.id), username=interaction.user.name)
-    await interaction.followup.send(f"{interaction.user.mention} celery says: `{celery_scheduled_data}`")
-
-@bot.tree.command(name="test_flipk_celery_schedule_del")
-@app_commands.describe(test_key = "Key To Delete:")
-async def test_flipkart_celery_schedule_delete(interaction: discord.Interaction, test_key: str):
-    await interaction.response.defer()
-    celery_deleted_schedule_data = await get_test_flipkart_celery_schedule_delete(test_key=test_key)
-    await interaction.followup.send(f"{interaction.user.mention} celery says: `{celery_deleted_schedule_data}`")
-
-# @bot.tree.command(name="recommendation_test")
-# @app_commands.describe(query="Name/Keyword for recommendation: ")
-# async def recommendation_test(interaction: discord.Interaction, query: str):
-#     await interaction.response.defer()
-#     recommendation_data = await get_recommendation_data(query)
-#     for recommendation in recommendation_data["results"][0:3]:
-#         await interaction.followup.send(f"""Domain: {recommendation["output"]} \nTitle: {recommendation["title"]} \nCategories: {recommendation["categories"]} \nRating: {recommendation["rating"]}""")
-#     # await interaction.followup.send(f"Model Output: {recommendation_data}")
-
-# bot.run(DISCORD_TOKEN) # type: ignore
+bot.run(DISCORD_TOKEN) # type: ignore
